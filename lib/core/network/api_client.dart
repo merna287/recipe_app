@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import '../constants/api_constants.dart';
 import '../errors/exceptions.dart';
+import 'api_error_handler.dart';
 import 'auth_interceptor.dart';
+import 'dio_config.dart';
 
 /// Centralized networking client using Dio.
 /// Sets up baseUrl, connection timeouts, common headers, and interceptors.
@@ -17,19 +21,42 @@ class ApiClient {
                 baseUrl: ApiConstants.baseUrl,
                 connectTimeout: ApiConstants.connectTimeout,
                 receiveTimeout: ApiConstants.receiveTimeout,
+                sendTimeout: ApiConstants.connectTimeout,
                 headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
                 },
               ),
             ) {
+    configureDio(_dio);
     _dio.interceptors.add(authInterceptor);
   }
 
   Dio get dio => _dio;
 
-  /// Helper method to convert DioException to clean domain/data exceptions.
+  static Map<String, dynamic>? parseJsonMap(dynamic data) {
+    if (data is Map<String, dynamic>) {
+      return data;
+    }
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    }
+    if (data is String && data.trim().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(data);
+        if (decoded is Map) {
+          return Map<String, dynamic>.from(decoded);
+        }
+      } catch (_) {}
+    }
+    return null;
+  }
+
   static Exception handleError(dynamic error) {
+    if (error is ServerException || error is NetworkException) {
+      return error;
+    }
+
     if (error is DioException) {
       switch (error.type) {
         case DioExceptionType.connectionTimeout:
@@ -40,14 +67,14 @@ class ApiClient {
             message: 'Connection timed out. Please check your internet connection.',
           );
         case DioExceptionType.badResponse:
-          final responseData = error.response?.data;
-          String errorMessage = 'A server error occurred';
-          if (responseData is Map && responseData.containsKey('message')) {
-            errorMessage = responseData['message'].toString();
-          }
+          final apiError = ApiErrorHandler.handle(error);
           return ServerException(
-            message: errorMessage,
-            statusCode: error.response?.statusCode,
+            message: apiError.message,
+            statusCode: apiError.status,
+          );
+        case DioExceptionType.badCertificate:
+          return const NetworkException(
+            message: 'Security certificate validation failed.',
           );
         case DioExceptionType.cancel:
           return const ServerException(message: 'Request was cancelled.');
@@ -58,6 +85,11 @@ class ApiClient {
           );
       }
     }
+
+    if (error is String) {
+      return ServerException(message: error);
+    }
+
     return ServerException(message: error.toString());
   }
 }

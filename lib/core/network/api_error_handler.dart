@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 
 import 'api_error_model.dart';
@@ -93,7 +95,21 @@ class ApiErrorHandler {
         extractedMessage = errorModel.message;
       }
     } else if (data is String && data.trim().isNotEmpty) {
-      extractedMessage = data.trim();
+      final trimmed = data.trim();
+      try {
+        final decoded = jsonDecode(trimmed);
+        if (decoded is Map) {
+          final errorModel = ApiErrorModel.fromJson(
+            Map<String, dynamic>.from(decoded),
+          );
+          if (errorModel.message != null &&
+              errorModel.message!.trim().isNotEmpty) {
+            extractedMessage = errorModel.message;
+          }
+        }
+      } catch (_) {
+        extractedMessage = trimmed;
+      }
     }
 
     final message = extractedMessage ?? _fallbackMessage(statusCode);

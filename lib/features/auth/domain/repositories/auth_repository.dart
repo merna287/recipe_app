@@ -9,4 +9,13 @@ abstract class AuthRepository {
     required String username,
     required String password,
   });
+
+  /// Creates a new account, then signs the user in with the same credentials.
+  Future<AuthSession> signUp({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String username,
+    required String password,
+  });
 }

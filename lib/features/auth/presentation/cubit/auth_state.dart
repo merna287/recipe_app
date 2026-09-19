@@ -37,3 +37,18 @@ class AuthError extends AuthState {
   @override
   List<Object?> get props => [message];
 }
+
+/// State emitted when registration succeeds but the user must sign in manually.
+/// This can occur on demo APIs that simulate registration without persisting users.
+class AuthRegistrationComplete extends AuthState {
+  final String username;
+  final String message;
+
+  const AuthRegistrationComplete({
+    required this.username,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [username, message];
+}

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../di/injection_container.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/sign_up_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -27,6 +28,15 @@ class AppRouter {
           builder: (_) => BlocProvider<AuthCubit>(
             create: (_) => sl<AuthCubit>(),
             child: const LoginScreen(),
+          ),
+        );
+
+      case AppRoutes.signUp:
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => BlocProvider<AuthCubit>(
+            create: (_) => sl<AuthCubit>(),
+            child: const SignUpScreen(),
           ),
         );
 

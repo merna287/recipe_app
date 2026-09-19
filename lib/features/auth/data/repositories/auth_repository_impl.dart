@@ -21,22 +21,26 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
-      // 1. Authenticate with Remote Data Source
       final model = await _remoteDataSource.login(
         username: username,
         password: password,
       );
 
-      // 2. Persist access token in TokenStorage
       final saveSuccess = await _tokenStorage.saveToken(model.accessToken);
       if (!saveSuccess) {
         throw const CacheException(message: 'Failed to persist authentication token');
       }
 
-      // 3. Return domain entity
       return model.toEntity();
     } on ServerException catch (e) {
-      if (e.statusCode == 400) {
+      if (e.statusCode == 400 || e.statusCode == 401) {
+        final localSession = await _loginLocalUser(
+          username: username,
+          password: password,
+        );
+        if (localSession != null) {
+          return localSession;
+        }
         throw AuthFailure(e.message);
       }
       throw ServerFailure(e.message);
@@ -47,5 +51,80 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       throw ServerFailure('An unexpected error occurred: ${e.toString()}');
     }
+  }
+
+  @override
+  Future<AuthSession> signUp({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String username,
+    required String password,
+  }) async {
+    try {
+      final registeredUser = await _remoteDataSource.register(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        username: username,
+        password: password,
+      );
+
+      await _tokenStorage.saveLocalRegisteredUser(
+        id: registeredUser.id,
+        username: registeredUser.username,
+        password: password,
+      );
+
+      return _createLocalSession(
+        userId: registeredUser.id,
+        username: registeredUser.username,
+      );
+    } on ServerException catch (e) {
+      if (e.statusCode == 400 || e.statusCode == 401) {
+        throw AuthFailure(e.message);
+      }
+      throw ServerFailure(e.message);
+    } on NetworkException catch (e) {
+      throw NetworkFailure(e.message);
+    } on CacheException catch (e) {
+      throw CacheFailure(e.message);
+    } catch (e) {
+      throw ServerFailure('An unexpected error occurred: ${e.toString()}');
+    }
+  }
+
+  Future<AuthSession> _createLocalSession({
+    required int userId,
+    required String username,
+  }) async {
+    final localToken = 'local-$userId';
+    final saveSuccess = await _tokenStorage.saveToken(localToken);
+    if (!saveSuccess) {
+      throw const CacheException(message: 'Failed to persist authentication token');
+    }
+
+    return AuthSession(
+      token: localToken,
+      username: username,
+    );
+  }
+
+  Future<AuthSession?> _loginLocalUser({
+    required String username,
+    required String password,
+  }) async {
+    final localUser = _tokenStorage.findLocalRegisteredUser(
+      username: username,
+      password: password,
+    );
+    if (localUser == null) {
+      return null;
+    }
+
+    return _createLocalSession(
+      userId: localUser.id,
+      username: localUser.username,
+    );
   }
 }
