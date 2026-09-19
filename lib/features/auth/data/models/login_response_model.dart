@@ -1,7 +1,5 @@
 import '../../domain/entities/auth_session.dart';
 
-/// Data model representing the JSON response from POST /auth/login.
-/// Parses the API contract and converts it into domain-friendly entities.
 class LoginResponseModel {
   final int id;
   final String username;
