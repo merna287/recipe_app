@@ -4,7 +4,7 @@ A Flutter Recipe App built with Clean Architecture and Cubit.
 
 ## 🎥 Demo
 
-Demo video coming soon.
+[Watch the Demo Video](https://drive.google.com/file/d/1vpuk5tislIISDArSZxBpiyAl6GIgItXs/view?usp=drive_link)
 
 ## 📱 Screenshots
 
@@ -38,7 +38,7 @@ Demo video coming soon.
 
 ![Profile](assets/images/profile.jpeg)
 
-![Profile](assets/images/profile_2jpeg)
+![Profile](assets/images/profile_2.jpeg)
 
 
 ## 🛠️ Technologies
