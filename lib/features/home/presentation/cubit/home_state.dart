@@ -37,8 +37,16 @@ class HomeLoaded extends HomeState {
   List<Recipe> get filteredRecommendedRecipes => _filterList(recommendedRecipes);
   List<Recipe> get filteredAllRecipes => _filterList(allRecipes);
 
-  List<Recipe> get savedRecipes =>
-      allRecipes.where((r) => favoriteRecipeIds.contains(r.id)).toList();
+  List<Recipe> get savedRecipes {
+    final seen = <int>{};
+    final list = <Recipe>[];
+    for (final r in allRecipes) {
+      if (favoriteRecipeIds.contains(r.id) && seen.add(r.id)) {
+        list.add(r);
+      }
+    }
+    return list;
+  }
 
   List<Recipe> _filterList(List<Recipe> list) {
     return list.where((recipe) {

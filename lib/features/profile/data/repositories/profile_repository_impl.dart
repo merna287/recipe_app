@@ -21,11 +21,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<UserProfile> getProfile({bool forceRemote = false}) async {
+    final actualSavedCount = _tokenStorage.getSavedRecipeIds().length;
+
     // 1. If not forcing a remote refresh, reuse authenticated user data from local storage
     if (!forceRemote) {
       final localProfile = await _localDataSource.getLastProfile();
       if (localProfile != null) {
-        return localProfile.toEntity();
+        return localProfile.toEntity(savedRecipesCount: actualSavedCount);
       }
     }
 
@@ -39,7 +41,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     if (token.startsWith('local-')) {
       final localProfile = await _localDataSource.getLastProfile();
       if (localProfile != null) {
-        return localProfile.toEntity();
+        return localProfile.toEntity(savedRecipesCount: actualSavedCount);
       }
       throw const AuthFailure('User profile not found for the local session.');
     }
@@ -48,18 +50,24 @@ class ProfileRepositoryImpl implements ProfileRepository {
     try {
       final remoteModel = await _remoteDataSource.getProfile();
       await _localDataSource.saveProfile(remoteModel);
-      return remoteModel.toEntity();
+      return remoteModel.toEntity(savedRecipesCount: actualSavedCount);
     } on ServerException catch (e) {
       final localProfile = await _localDataSource.getLastProfile();
-      if (localProfile != null) return localProfile.toEntity();
+      if (localProfile != null) {
+        return localProfile.toEntity(savedRecipesCount: actualSavedCount);
+      }
       throw ServerFailure(e.message);
     } on NetworkException catch (e) {
       final localProfile = await _localDataSource.getLastProfile();
-      if (localProfile != null) return localProfile.toEntity();
+      if (localProfile != null) {
+        return localProfile.toEntity(savedRecipesCount: actualSavedCount);
+      }
       throw NetworkFailure(e.message);
     } catch (e) {
       final localProfile = await _localDataSource.getLastProfile();
-      if (localProfile != null) return localProfile.toEntity();
+      if (localProfile != null) {
+        return localProfile.toEntity(savedRecipesCount: actualSavedCount);
+      }
       throw ServerFailure('Unable to load profile: ${e.toString()}');
     }
   }

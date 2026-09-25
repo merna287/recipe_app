@@ -116,6 +116,7 @@ Future<void> initDependencies() async {
     () => HomeCubit(
       getRecipesUseCase: sl<GetRecipesUseCase>(),
       searchRecipesUseCase: sl<SearchRecipesUseCase>(),
+      tokenStorage: sl<TokenStorage>(),
     ),
   );
 

@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:recipe_app/core/storage/token_storage.dart';
 import 'package:recipe_app/features/home/domain/entities/recipe.dart';
 import 'package:recipe_app/features/home/domain/repositories/recipe_repository.dart';
 import 'package:recipe_app/features/home/domain/usecases/get_recipes_usecase.dart';
 import 'package:recipe_app/features/home/domain/usecases/search_recipes_usecase.dart';
 import 'package:recipe_app/features/home/presentation/cubit/home_cubit.dart';
 import 'package:recipe_app/features/home/presentation/cubit/home_state.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockRecipeRepository implements RecipeRepository {
   final List<Recipe> recipes;
@@ -23,9 +25,12 @@ class MockRecipeRepository implements RecipeRepository {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late MockRecipeRepository mockRepository;
   late GetRecipesUseCase getRecipesUseCase;
   late SearchRecipesUseCase searchRecipesUseCase;
+  late TokenStorage tokenStorage;
   late HomeCubit cubit;
 
   final sampleRecipes = [
@@ -55,13 +60,17 @@ void main() {
     ),
   ];
 
-  setUp(() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    tokenStorage = TokenStorage(prefs);
     mockRepository = MockRecipeRepository(sampleRecipes);
     getRecipesUseCase = GetRecipesUseCase(mockRepository);
     searchRecipesUseCase = SearchRecipesUseCase(mockRepository);
     cubit = HomeCubit(
       getRecipesUseCase: getRecipesUseCase,
       searchRecipesUseCase: searchRecipesUseCase,
+      tokenStorage: tokenStorage,
     );
   });
 
@@ -115,5 +124,23 @@ void main() {
     state = cubit.state as HomeLoaded;
     expect(state.selectedCategory, 'All');
     expect(state.filteredAllRecipes.length, 2);
+  });
+
+  test('persists saved recipes to TokenStorage and restores them on loadRecipes', () async {
+    await cubit.loadRecipes();
+    cubit.toggleFavorite(1);
+    expect(tokenStorage.getSavedRecipeIds(), {1});
+
+    final newCubit = HomeCubit(
+      getRecipesUseCase: getRecipesUseCase,
+      searchRecipesUseCase: searchRecipesUseCase,
+      tokenStorage: tokenStorage,
+    );
+    await newCubit.loadRecipes();
+    final newState = newCubit.state as HomeLoaded;
+    expect(newState.favoriteRecipeIds, {1});
+    expect(newState.savedRecipes.length, 1);
+    expect(newState.allRecipes.firstWhere((r) => r.id == 1).isFavorite, isTrue);
+    newCubit.close();
   });
 }

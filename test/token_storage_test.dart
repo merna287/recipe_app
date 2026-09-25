@@ -74,4 +74,18 @@ void main() {
     expect(user?['email'], 'alice@example.com');
     expect(user?['firstName'], 'Alice');
   });
+
+  test('saveSavedRecipeIds and getSavedRecipeIds persist and retrieve exact IDs', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final storage = TokenStorage(prefs);
+
+    expect(storage.getSavedRecipeIds(), isEmpty);
+
+    await storage.saveSavedRecipeIds({1, 3, 5});
+    expect(storage.getSavedRecipeIds(), {1, 3, 5});
+
+    await storage.saveSavedRecipeIds({});
+    expect(storage.getSavedRecipeIds(), isEmpty);
+  });
 }

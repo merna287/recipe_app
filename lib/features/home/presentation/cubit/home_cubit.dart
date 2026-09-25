@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/storage/token_storage.dart';
 import '../../domain/usecases/get_recipes_usecase.dart';
 import '../../domain/usecases/search_recipes_usecase.dart';
 import 'home_state.dart';
@@ -8,26 +9,36 @@ import 'home_state.dart';
 class HomeCubit extends Cubit<HomeState> {
   final GetRecipesUseCase _getRecipesUseCase;
   final SearchRecipesUseCase _searchRecipesUseCase;
+  final TokenStorage _tokenStorage;
 
   HomeCubit({
     required GetRecipesUseCase getRecipesUseCase,
     required SearchRecipesUseCase searchRecipesUseCase,
+    required TokenStorage tokenStorage,
   })  : _getRecipesUseCase = getRecipesUseCase,
         _searchRecipesUseCase = searchRecipesUseCase,
+        _tokenStorage = tokenStorage,
         super(const HomeInitial());
 
   Future<void> loadRecipes() async {
     emit(const HomeLoading());
     try {
       final recipes = await _getRecipesUseCase();
+      final savedIds = _tokenStorage.getSavedRecipeIds();
 
-      final popular = recipes.take(4).toList();
-      final recommended = recipes.skip(4).toList();
+      final updatedAll = recipes.map((r) {
+        return r.copyWith(isFavorite: savedIds.contains(r.id));
+      }).toList();
+
+      final popular = updatedAll.take(4).toList();
+      final recommended = updatedAll.skip(4).toList();
 
       emit(HomeLoaded(
         popularRecipes: popular,
-        recommendedRecipes: recommended.isNotEmpty ? recommended : recipes,
-        allRecipes: recipes,
+        recommendedRecipes:
+            recommended.isNotEmpty ? recommended : updatedAll,
+        allRecipes: updatedAll,
+        favoriteRecipeIds: savedIds,
       ));
     } catch (e) {
       emit(HomeError('Failed to load recipes: ${e.toString()}'));
@@ -55,6 +66,9 @@ class HomeCubit extends Cubit<HomeState> {
           final existingIds = updated.allRecipes.map((r) => r.id).toSet();
           final newRecipes = remoteMatches
               .where((r) => !existingIds.contains(r.id))
+              .map((r) => r.copyWith(
+                    isFavorite: updated.favoriteRecipeIds.contains(r.id),
+                  ))
               .toList();
 
           if (newRecipes.isNotEmpty) {
@@ -85,6 +99,8 @@ class HomeCubit extends Cubit<HomeState> {
       } else {
         updatedFavorites.add(recipeId);
       }
+
+      _tokenStorage.saveSavedRecipeIds(updatedFavorites);
 
       final updatedAll = current.allRecipes.map((r) {
         if (r.id == recipeId) {

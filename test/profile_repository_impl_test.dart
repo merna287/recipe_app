@@ -131,4 +131,29 @@ void main() {
     expect(profile.fullName, 'Legacy User');
     expect(profile.email, 'legacy@example.com');
   });
+
+  test('getProfile returns exact saved recipes count from TokenStorage', () async {
+    await tokenStorage.saveToken('remote-token-123');
+    await tokenStorage.saveUser({
+      'id': 1,
+      'username': 'emilys',
+      'email': 'emily@example.com',
+      'firstName': 'Emily',
+      'lastName': 'Johnson',
+    });
+
+    // 0 saved items
+    var profile = await repository.getProfile();
+    expect(profile.savedRecipesCount, 0);
+
+    // 3 saved items
+    await tokenStorage.saveSavedRecipeIds({10, 20, 30});
+    profile = await repository.getProfile();
+    expect(profile.savedRecipesCount, 3);
+
+    // 5 saved items
+    await tokenStorage.saveSavedRecipeIds({1, 2, 3, 4, 5});
+    profile = await repository.getProfile();
+    expect(profile.savedRecipesCount, 5);
+  });
 }

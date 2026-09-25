@@ -81,14 +81,43 @@ class TokenStorage {
     return await _preferences.remove(_userKey);
   }
 
-  /// Clears both session token and user session data on logout.
+  /// Clears session token, user session data, and active saved session items on logout.
   Future<bool> clear() async {
     await clearUserSession();
+    await _preferences.remove(_savedRecipesKeyPrefix);
     return await _preferences.remove(_tokenKey);
   }
 
   Future<bool> clearToken() async {
     return await clear();
+  }
+
+  static const String _savedRecipesKeyPrefix = 'saved_recipes_ids';
+
+  /// Saves the user's selected/favorited recipe IDs to local storage.
+  Future<bool> saveSavedRecipeIds(Set<int> ids) async {
+    final user = getUser();
+    final userId = user?['id'];
+    final stringList = ids.map((id) => id.toString()).toList();
+    if (userId != null) {
+      await _preferences.setStringList('${_savedRecipesKeyPrefix}_$userId', stringList);
+    }
+    return await _preferences.setStringList(_savedRecipesKeyPrefix, stringList);
+  }
+
+  /// Retrieves the saved recipe IDs for the active user session.
+  Set<int> getSavedRecipeIds() {
+    final user = getUser();
+    final userId = user?['id'];
+    if (userId != null) {
+      final userSpecificList = _preferences.getStringList('${_savedRecipesKeyPrefix}_$userId');
+      if (userSpecificList != null) {
+        return userSpecificList.map((e) => int.tryParse(e)).whereType<int>().toSet();
+      }
+    }
+    final fallbackList = _preferences.getStringList(_savedRecipesKeyPrefix);
+    if (fallbackList == null) return {};
+    return fallbackList.map((e) => int.tryParse(e)).whereType<int>().toSet();
   }
 
   Future<bool> saveLocalRegisteredUser({

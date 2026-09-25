@@ -24,7 +24,7 @@ class UserProfile extends Equatable {
     this.gender,
     this.phone,
     this.cookedRecipesCount = 12,
-    this.savedRecipesCount = 8,
+    this.savedRecipesCount = 0,
     this.reviewsCount = 24,
   });
 

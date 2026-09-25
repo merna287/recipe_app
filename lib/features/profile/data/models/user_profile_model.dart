@@ -51,7 +51,7 @@ class UserProfileModel {
   /// Maps the technical model into domain entity [UserProfile].
   UserProfile toEntity({
     int cookedRecipesCount = 12,
-    int savedRecipesCount = 8,
+    int savedRecipesCount = 0,
     int reviewsCount = 24,
   }) {
     return UserProfile(
