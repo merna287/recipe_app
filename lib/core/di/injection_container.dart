@@ -11,6 +11,12 @@ import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/sign_up_usecase.dart';
 import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../../features/home/data/datasources/recipe_remote_data_source.dart';
+import '../../features/home/data/repositories/recipe_repository_impl.dart';
+import '../../features/home/domain/repositories/recipe_repository.dart';
+import '../../features/home/domain/usecases/get_recipes_usecase.dart';
+import '../../features/home/domain/usecases/search_recipes_usecase.dart';
+import '../../features/home/presentation/cubit/home_cubit.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -68,6 +74,36 @@ Future<void> initDependencies() async {
     () => AuthCubit(
       loginUseCase: sl<LoginUseCase>(),
       signUpUseCase: sl<SignUpUseCase>(),
+    ),
+  );
+
+  //! 5. Features - Home
+  // Data Source
+  sl.registerLazySingleton<RecipeRemoteDataSource>(
+    () => RecipeRemoteDataSourceImpl(sl<Dio>()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<RecipeRepository>(
+    () => RecipeRepositoryImpl(
+      remoteDataSource: sl<RecipeRemoteDataSource>(),
+    ),
+  );
+
+  // Use Cases
+  sl.registerLazySingleton<GetRecipesUseCase>(
+    () => GetRecipesUseCase(sl<RecipeRepository>()),
+  );
+
+  sl.registerLazySingleton<SearchRecipesUseCase>(
+    () => SearchRecipesUseCase(sl<RecipeRepository>()),
+  );
+
+  // Presentation (Cubits)
+  sl.registerFactory<HomeCubit>(
+    () => HomeCubit(
+      getRecipesUseCase: sl<GetRecipesUseCase>(),
+      searchRecipesUseCase: sl<SearchRecipesUseCase>(),
     ),
   );
 }

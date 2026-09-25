@@ -5,7 +5,8 @@ import '../../features/auth/presentation/cubit/auth_cubit.dart';
 import '../../features/auth/presentation/pages/login_screen.dart';
 import '../../features/auth/presentation/pages/sign_up_screen.dart';
 import '../../features/splash/presentation/pages/splash_screen.dart';
-import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/home/presentation/cubit/home_cubit.dart';
+import '../../features/home/presentation/pages/home_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import 'app_routes.dart';
 
@@ -43,7 +44,10 @@ class AppRouter {
       case AppRoutes.home:
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => const HomeScreen(),
+          builder: (_) => BlocProvider<HomeCubit>(
+            create: (_) => sl<HomeCubit>()..loadRecipes(),
+            child: const HomeScreen(),
+          ),
         );
 
       case AppRoutes.profile:
