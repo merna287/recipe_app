@@ -130,4 +130,15 @@ void main() {
       throwsA(isA<AuthFailure>()),
     );
   });
+
+  test('logout clears persisted session token from storage', () async {
+    await tokenStorage.saveToken('active-token-123');
+    expect(tokenStorage.hasToken(), isTrue);
+
+    await repository.logout();
+
+    expect(tokenStorage.hasToken(), isFalse);
+    expect(tokenStorage.getToken(), isNull);
+  });
 }
+

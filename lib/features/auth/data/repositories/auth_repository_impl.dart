@@ -127,4 +127,19 @@ class AuthRepositoryImpl implements AuthRepository {
       username: localUser.username,
     );
   }
+
+  @override
+  Future<void> logout() async {
+    try {
+      final cleared = await _tokenStorage.clearToken();
+      if (!cleared) {
+        throw const CacheException(message: 'Failed to clear session token');
+      }
+    } on CacheException catch (e) {
+      throw CacheFailure(e.message);
+    } catch (e) {
+      throw CacheFailure('Failed to logout: ${e.toString()}');
+    }
+  }
 }
+

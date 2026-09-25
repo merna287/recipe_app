@@ -52,3 +52,9 @@ class AuthRegistrationComplete extends AuthState {
   @override
   List<Object?> get props => [username, message];
 }
+
+/// State emitted when the user has logged out and session credentials cleared.
+class AuthUnauthenticated extends AuthState {
+  const AuthUnauthenticated();
+}
+

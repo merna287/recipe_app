@@ -18,4 +18,7 @@ abstract class AuthRepository {
     required String username,
     required String password,
   });
+
+  /// Clears stored authentication session and credentials.
+  Future<void> logout();
 }
