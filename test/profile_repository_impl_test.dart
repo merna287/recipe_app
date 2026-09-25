@@ -39,8 +39,8 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     remoteDataSource = FakeProfileRemoteDataSource();
-    localDataSource = ProfileLocalDataSourceImpl(prefs);
     tokenStorage = TokenStorage(prefs);
+    localDataSource = ProfileLocalDataSourceImpl(tokenStorage);
     repository = ProfileRepositoryImpl(
       remoteDataSource: remoteDataSource,
       localDataSource: localDataSource,
@@ -48,7 +48,24 @@ void main() {
     );
   });
 
-  test('getProfile fetches from remote and caches on success', () async {
+  test('getProfile reuses existing user session from TokenStorage without remote call', () async {
+    await tokenStorage.saveToken('dummy-token');
+    await tokenStorage.saveUser({
+      'id': 1,
+      'username': 'emilys',
+      'email': 'emily@example.com',
+      'firstName': 'Emily',
+      'lastName': 'Johnson',
+    });
+
+    final profile = await repository.getProfile();
+
+    expect(remoteDataSource.callCount, 0); // No remote call
+    expect(profile.username, 'emilys');
+    expect(profile.fullName, 'Emily Johnson');
+  });
+
+  test('getProfile calls remote and saves session when TokenStorage has no session data', () async {
     await tokenStorage.saveToken('remote-token-123');
 
     final profile = await repository.getProfile();
@@ -57,8 +74,8 @@ void main() {
     expect(profile.username, 'emilys');
     expect(profile.fullName, 'Emily Johnson');
 
-    final cached = await localDataSource.getLastProfile();
-    expect(cached?.username, 'emilys');
+    final savedSession = tokenStorage.getUser();
+    expect(savedSession?['username'], 'emilys');
   });
 
   test('getProfile returns cached profile when remote fails', () async {
@@ -73,18 +90,45 @@ void main() {
 
     remoteDataSource.shouldFail = true;
 
-    final profile = await repository.getProfile();
+    final profile = await repository.getProfile(forceRemote: true);
 
     expect(profile.username, 'cacheduser');
     expect(profile.fullName, 'Cached Chef');
   });
 
-  test('getProfile returns fallback profile for local test session', () async {
+  test('getProfile returns actual user for local session if session is persisted', () async {
     await tokenStorage.saveToken('local-999');
+    await tokenStorage.saveUser({
+      'id': 999,
+      'username': 'localchef',
+      'email': 'local@example.com',
+      'firstName': 'Local',
+      'lastName': 'Chef',
+    });
 
     final profile = await repository.getProfile();
 
-    expect(remoteDataSource.callCount, 0); // Should not call remote
-    expect(profile.username, 'culinary_artist');
+    expect(remoteDataSource.callCount, 0);
+    expect(profile.username, 'localchef');
+    expect(profile.fullName, 'Local Chef');
+  });
+
+  test('getProfile recovers user from local registered users when session was not cached yet', () async {
+    await tokenStorage.saveLocalRegisteredUser(
+      id: 555,
+      username: 'legacyuser',
+      password: 'password123',
+      email: 'legacy@example.com',
+      firstName: 'Legacy',
+      lastName: 'User',
+    );
+    await tokenStorage.saveToken('local-555');
+
+    final profile = await repository.getProfile();
+
+    expect(remoteDataSource.callCount, 0);
+    expect(profile.username, 'legacyuser');
+    expect(profile.fullName, 'Legacy User');
+    expect(profile.email, 'legacy@example.com');
   });
 }

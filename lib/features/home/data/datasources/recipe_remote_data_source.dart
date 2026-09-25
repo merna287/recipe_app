@@ -4,7 +4,6 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/recipe_model.dart';
 
-/// Contract for fetching recipe data remotely via HTTP/REST.
 abstract class RecipeRemoteDataSource {
   Future<List<RecipeModel>> getRecipes({int limit = 30, int skip = 0});
   Future<List<RecipeModel>> searchRecipes(String query);

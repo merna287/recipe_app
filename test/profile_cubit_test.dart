@@ -10,7 +10,7 @@ class FakeProfileRepository implements ProfileRepository {
   bool shouldFail = false;
 
   @override
-  Future<UserProfile> getProfile() async {
+  Future<UserProfile> getProfile({bool forceRemote = false}) async {
     if (shouldFail) {
       throw const ServerFailure('Failed to load profile');
     }

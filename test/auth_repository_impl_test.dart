@@ -82,8 +82,11 @@ void main() {
 
     expect(remoteDataSource.loginCalls, 1);
     expect(session.username, 'emilys');
+    expect(session.fullName, 'Emily Johnson');
     expect(session.token, 'dummy-token');
     expect(tokenStorage.getToken(), 'dummy-token');
+    expect(tokenStorage.getUserSession()?['username'], 'emilys');
+    expect(tokenStorage.getUserSession()?['email'], 'emily@example.com');
   });
 
   test('signUp creates local session without DummyJSON login', () async {
@@ -98,8 +101,11 @@ void main() {
     expect(remoteDataSource.registerCalls, 1);
     expect(remoteDataSource.loginCalls, 0);
     expect(session.username, 'newuser');
+    expect(session.fullName, 'New User');
     expect(session.token, 'local-209');
     expect(tokenStorage.getToken(), 'local-209');
+    expect(tokenStorage.getUserSession()?['username'], 'newuser');
+    expect(tokenStorage.getUserSession()?['email'], 'new@example.com');
   });
 
   test('login falls back to local session for registered user', () async {
@@ -121,7 +127,9 @@ void main() {
 
     expect(remoteDataSource.loginCalls, 1);
     expect(session.username, 'newuser');
+    expect(session.fullName, 'New User');
     expect(session.token, 'local-209');
+    expect(tokenStorage.getUserSession()?['username'], 'newuser');
   });
 
   test('login rejects unknown credentials', () async {
@@ -131,14 +139,17 @@ void main() {
     );
   });
 
-  test('logout clears persisted session token from storage', () async {
+  test('logout clears persisted session token and user data from storage', () async {
     await tokenStorage.saveToken('active-token-123');
+    await tokenStorage.saveUserSession({'username': 'emilys', 'id': 1});
     expect(tokenStorage.hasToken(), isTrue);
+    expect(tokenStorage.getUserSession(), isNotNull);
 
     await repository.logout();
 
     expect(tokenStorage.hasToken(), isFalse);
     expect(tokenStorage.getToken(), isNull);
+    expect(tokenStorage.getUserSession(), isNull);
   });
 }
 

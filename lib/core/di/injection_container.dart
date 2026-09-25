@@ -126,7 +126,7 @@ Future<void> initDependencies() async {
   );
 
   sl.registerLazySingleton<ProfileLocalDataSource>(
-    () => ProfileLocalDataSourceImpl(sl<SharedPreferences>()),
+    () => ProfileLocalDataSourceImpl(sl<TokenStorage>()),
   );
 
   // Repository

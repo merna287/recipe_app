@@ -7,7 +7,7 @@ class GetProfileUseCase {
 
   const GetProfileUseCase(this._repository);
 
-  Future<UserProfile> call() async {
-    return await _repository.getProfile();
+  Future<UserProfile> call({bool forceRemote = false}) async {
+    return await _repository.getProfile(forceRemote: forceRemote);
   }
 }

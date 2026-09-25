@@ -20,46 +20,46 @@ class ProfileRepositoryImpl implements ProfileRepository {
         _tokenStorage = tokenStorage;
 
   @override
-  Future<UserProfile> getProfile() async {
-    final token = _tokenStorage.getToken();
-    final isLocalSession = token != null && token.startsWith('local-');
-
-    if (isLocalSession) {
-      final cached = await _localDataSource.getLastProfile();
-      if (cached != null) {
-        return cached.toEntity();
+  Future<UserProfile> getProfile({bool forceRemote = false}) async {
+    // 1. If not forcing a remote refresh, reuse authenticated user data from local storage
+    if (!forceRemote) {
+      final localProfile = await _localDataSource.getLastProfile();
+      if (localProfile != null) {
+        return localProfile.toEntity();
       }
-      return const UserProfile(
-        id: 1,
-        username: 'culinary_artist',
-        email: 'chef@savore.com',
-        firstName: 'Chef',
-        lastName: 'Gourmet',
-        gender: 'culinary',
-      );
     }
 
+    // 2. Verify active token exists
+    final token = _tokenStorage.getToken();
+    if (token == null || token.isEmpty) {
+      throw const AuthFailure('No active user session found.');
+    }
+
+    // 3. Local sessions cannot call remote DummyJSON /auth/me
+    if (token.startsWith('local-')) {
+      final localProfile = await _localDataSource.getLastProfile();
+      if (localProfile != null) {
+        return localProfile.toEntity();
+      }
+      throw const AuthFailure('User profile not found for the local session.');
+    }
+
+    // 4. Retrieve user data from remote authenticated endpoint (/auth/me)
     try {
       final remoteModel = await _remoteDataSource.getProfile();
       await _localDataSource.saveProfile(remoteModel);
       return remoteModel.toEntity();
     } on ServerException catch (e) {
-      final cached = await _localDataSource.getLastProfile();
-      if (cached != null) {
-        return cached.toEntity();
-      }
+      final localProfile = await _localDataSource.getLastProfile();
+      if (localProfile != null) return localProfile.toEntity();
       throw ServerFailure(e.message);
     } on NetworkException catch (e) {
-      final cached = await _localDataSource.getLastProfile();
-      if (cached != null) {
-        return cached.toEntity();
-      }
+      final localProfile = await _localDataSource.getLastProfile();
+      if (localProfile != null) return localProfile.toEntity();
       throw NetworkFailure(e.message);
     } catch (e) {
-      final cached = await _localDataSource.getLastProfile();
-      if (cached != null) {
-        return cached.toEntity();
-      }
+      final localProfile = await _localDataSource.getLastProfile();
+      if (localProfile != null) return localProfile.toEntity();
       throw ServerFailure('Unable to load profile: ${e.toString()}');
     }
   }

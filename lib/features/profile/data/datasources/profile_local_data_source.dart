@@ -1,5 +1,4 @@
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/storage/token_storage.dart';
 import '../models/user_profile_model.dart';
 
 /// Contract for persisting and retrieving user profile from local cache.
@@ -9,33 +8,29 @@ abstract class ProfileLocalDataSource {
   Future<bool> clearProfile();
 }
 
+/// Implementation delegating to the project's centralized [TokenStorage].
+/// Ensures no duplicate storage or divergent keys exist.
 class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
-  static const String _cachedProfileKey = 'cached_user_profile';
-  final SharedPreferences _preferences;
+  final TokenStorage _tokenStorage;
 
-  ProfileLocalDataSourceImpl(this._preferences);
+  ProfileLocalDataSourceImpl(this._tokenStorage);
 
   @override
   Future<UserProfileModel?> getLastProfile() async {
-    final raw = _preferences.getString(_cachedProfileKey);
-    if (raw == null || raw.isEmpty) return null;
-    try {
-      final json = jsonDecode(raw);
-      if (json is Map<String, dynamic>) {
-        return UserProfileModel.fromJson(json);
-      }
-    } catch (_) {}
+    final userMap = _tokenStorage.getUser();
+    if (userMap != null) {
+      return UserProfileModel.fromJson(userMap);
+    }
     return null;
   }
 
   @override
   Future<bool> saveProfile(UserProfileModel model) async {
-    final raw = jsonEncode(model.toJson());
-    return await _preferences.setString(_cachedProfileKey, raw);
+    return await _tokenStorage.saveUser(model.toJson());
   }
 
   @override
   Future<bool> clearProfile() async {
-    return await _preferences.remove(_cachedProfileKey);
+    return await _tokenStorage.clearUserSession();
   }
 }

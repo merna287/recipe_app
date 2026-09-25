@@ -65,7 +65,7 @@ class ProfileScreen extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.refresh_rounded),
               tooltip: 'Refresh profile',
-              onPressed: () => context.read<ProfileCubit>().loadProfile(),
+              onPressed: () => context.read<ProfileCubit>().loadProfile(forceRemote: true),
             ),
           ],
         ),
@@ -87,7 +87,7 @@ class ProfileScreen extends StatelessWidget {
                     title: 'Profile Unavailable',
                     message: state.message,
                     actionLabel: 'Try Again',
-                    onAction: () => context.read<ProfileCubit>().loadProfile(),
+                    onAction: () => context.read<ProfileCubit>().loadProfile(forceRemote: true),
                   ),
                 );
               }
@@ -97,7 +97,7 @@ class ProfileScreen extends StatelessWidget {
 
                 return RefreshIndicator(
                   color: AppColors.primary,
-                  onRefresh: () => context.read<ProfileCubit>().loadProfile(),
+                  onRefresh: () => context.read<ProfileCubit>().loadProfile(forceRemote: true),
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(
                       parent: BouncingScrollPhysics(),

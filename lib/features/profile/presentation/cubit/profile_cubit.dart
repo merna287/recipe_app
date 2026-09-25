@@ -13,11 +13,11 @@ class ProfileCubit extends Cubit<ProfileState> {
         super(const ProfileInitial());
 
   /// Loads profile data for the authenticated user.
-  Future<void> loadProfile() async {
+  Future<void> loadProfile({bool forceRemote = false}) async {
     emit(const ProfileLoading());
 
     try {
-      final profile = await _getProfileUseCase();
+      final profile = await _getProfileUseCase(forceRemote: forceRemote);
       emit(ProfileLoaded(profile));
     } on Failure catch (f) {
       emit(ProfileError(f.message));
