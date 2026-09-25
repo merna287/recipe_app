@@ -121,27 +121,38 @@ class TokenStorage {
     required String password,
   }) {
     final users = _readLocalUsers();
-    final entry = users[username.trim()];
-    if (entry is! Map) {
-      return null;
+    final trimmedQuery = username.trim().toLowerCase();
+
+    for (final entry in users.entries) {
+      final keyUsername = entry.key.toLowerCase();
+      final data = entry.value;
+      if (data is! Map) continue;
+
+      final dataEmail = (data['email'] as String?)?.trim().toLowerCase();
+      final isMatch = keyUsername == trimmedQuery ||
+          (dataEmail != null && dataEmail == trimmedQuery);
+
+      if (isMatch) {
+        if (data['password'] != password.trim()) {
+          return null;
+        }
+
+        final id = data['id'];
+        if (id is! num) {
+          return null;
+        }
+
+        return (
+          id: id.toInt(),
+          username: entry.key,
+          email: data['email'] as String?,
+          firstName: data['firstName'] as String?,
+          lastName: data['lastName'] as String?,
+        );
+      }
     }
 
-    if (entry['password'] != password.trim()) {
-      return null;
-    }
-
-    final id = entry['id'];
-    if (id is! num) {
-      return null;
-    }
-
-    return (
-      id: id.toInt(),
-      username: username.trim(),
-      email: entry['email'] as String?,
-      firstName: entry['firstName'] as String?,
-      lastName: entry['lastName'] as String?,
-    );
+    return null;
   }
 
   ({

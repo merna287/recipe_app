@@ -110,9 +110,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                               AppTextField(
                                 controller: _usernameController,
-                                label: 'Email',
-                                hint: 'Enter your email address',
-                                prefixIcon: Icons.mail_outline_rounded,
+                                label: 'Email or Username',
+                                hint: 'Enter your email or username',
+                                prefixIcon: Icons.person_outline_rounded,
                                 keyboardType: TextInputType.emailAddress,
                                 enabled: !isLoading,
                                 textInputAction: TextInputAction.next,
