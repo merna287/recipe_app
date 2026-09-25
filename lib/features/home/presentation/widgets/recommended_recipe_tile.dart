@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/app_network_image.dart';
-import '../../data/models/recipe_ui_model.dart';
+import '../../domain/entities/recipe.dart';
 
 class RecommendedRecipeTile extends StatelessWidget {
-  final RecipeUiModel recipe;
+  final Recipe recipe;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onTap;
 
