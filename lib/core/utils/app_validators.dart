@@ -1,5 +1,5 @@
-/// Client-side validation helpers for authentication forms.
-abstract final class AuthValidators {
+/// Client-side validation helpers for application and authentication forms.
+abstract final class AppValidators {
   static final _emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
 
   static String? required(String? value, String fieldName) {
@@ -15,7 +15,7 @@ abstract final class AuthValidators {
   }
 
   static String? email(String? value) {
-    final requiredError = AuthValidators.required(value, 'email');
+    final requiredError = AppValidators.required(value, 'email');
     if (requiredError != null) return requiredError;
 
     if (!_emailRegex.hasMatch(value!.trim())) {
@@ -25,7 +25,7 @@ abstract final class AuthValidators {
   }
 
   static String? username(String? value) {
-    final requiredError = AuthValidators.required(value, 'username');
+    final requiredError = AppValidators.required(value, 'username');
     if (requiredError != null) return requiredError;
 
     if (value!.trim().length < 3) {
@@ -35,7 +35,7 @@ abstract final class AuthValidators {
   }
 
   static String? password(String? value) {
-    final requiredError = AuthValidators.required(value, 'password');
+    final requiredError = AppValidators.required(value, 'password');
     if (requiredError != null) return requiredError;
 
     if (value!.length < 6) {
@@ -45,7 +45,7 @@ abstract final class AuthValidators {
   }
 
   static String? confirmPassword(String? value, String password) {
-    final requiredError = AuthValidators.required(value, 'confirmation');
+    final requiredError = AppValidators.required(value, 'confirmation');
     if (requiredError != null) return 'Please confirm your password';
 
     if (value != password) {
@@ -54,3 +54,6 @@ abstract final class AuthValidators {
     return null;
   }
 }
+
+/// Backward compatibility alias for AuthValidators
+typedef AuthValidators = AppValidators;

@@ -117,7 +117,7 @@ class PopularRecipeCard extends StatelessWidget {
                 children: [
                   Text(
                     recipe.cuisine,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: AppColors.accent,

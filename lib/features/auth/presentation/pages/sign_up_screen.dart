@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/routes/app_routes.dart';
+import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/app_primary_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
-import '../utils/auth_validators.dart';
+import '../../../../core/utils/app_validators.dart';
 import '../widgets/auth_brand_hero.dart';
 import '../widgets/auth_form_card.dart';
 
@@ -101,7 +101,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      AuthBrandHero(
+                      const AuthBrandHero(
                         heightFactor: 0.26,
                         title: 'Join Savoré',
                         subtitle:

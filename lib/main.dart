@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'core/di/injection_container.dart';
-import 'core/routes/app_router.dart';
-import 'core/routes/app_routes.dart';
+import 'core/routing/app_router.dart';
+import 'core/routing/app_routes.dart';
 import 'core/theme/app_theme.dart';
 
 void main() async {

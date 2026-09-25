@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:recipe_app/core/errors/exceptions.dart';
+import 'package:recipe_app/core/error/exceptions.dart';
 import 'package:recipe_app/core/network/api_client.dart';
 
 void main() {

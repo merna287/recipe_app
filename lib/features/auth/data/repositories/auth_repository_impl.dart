@@ -1,5 +1,5 @@
-import '../../../../core/errors/exceptions.dart';
-import '../../../../core/errors/failures.dart';
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/error/failures.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../domain/entities/auth_session.dart';
 import '../../domain/repositories/auth_repository.dart';

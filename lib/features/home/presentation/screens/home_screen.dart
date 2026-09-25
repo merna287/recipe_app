@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/routes/app_routes.dart';
+import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/app_empty_state.dart';
@@ -209,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
           if (filteredRecommended.isNotEmpty) ...[
-            SliverToBoxAdapter(
+            const SliverToBoxAdapter(
               child: AppSectionHeader(
                 subtitle: 'PERSONALIZED',
                 title: 'Recommended For You',

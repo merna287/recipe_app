@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:recipe_app/core/errors/exceptions.dart';
-import 'package:recipe_app/core/errors/failures.dart';
+import 'package:recipe_app/core/error/exceptions.dart';
+import 'package:recipe_app/core/error/failures.dart';
 import 'package:recipe_app/core/storage/token_storage.dart';
 import 'package:recipe_app/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:recipe_app/features/auth/data/models/login_response_model.dart';
