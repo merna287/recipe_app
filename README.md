@@ -24,7 +24,7 @@ Demo video coming soon.
 
 ![Home](assets/images/home.jpeg)
 
-![Home](assets/images/home%202.jpeg)
+![Home](assets/images/home_2.jpeg)
 
 ### Recipe Details
 
@@ -38,7 +38,7 @@ Demo video coming soon.
 
 ![Profile](assets/images/profile.jpeg)
 
-![Profile](assets/images/profile%202jpeg)
+![Profile](assets/images/profile_2jpeg)
 
 
 ## 🛠️ Technologies
