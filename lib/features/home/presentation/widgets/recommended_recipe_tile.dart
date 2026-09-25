@@ -129,7 +129,7 @@ class RecommendedRecipeTile extends StatelessWidget {
                                 ),
                               ),
                               const Spacer(),
-                              Icon(
+                              const Icon(
                                 Icons.schedule_outlined,
                                 size: 14,
                                 color: AppColors.textTertiary,

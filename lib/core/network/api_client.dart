@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import '../constants/api_constants.dart';
-import '../errors/exceptions.dart';
+import '../error/exceptions.dart';
 import 'api_error_handler.dart';
 import 'auth_interceptor.dart';
 import 'dio_config.dart';
