@@ -56,6 +56,12 @@ class LoginResponseModel {
     return AuthSession(
       token: accessToken,
       username: username,
+      id: id,
+      email: email,
+      firstName: firstName,
+      lastName: lastName,
+      gender: gender,
+      image: image,
     );
   }
 }

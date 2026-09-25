@@ -33,10 +33,37 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
   }) async {
     try {
+      String resolvedUsername = username.trim();
+
+      // If the identifier is an email, resolve the DummyJSON username if available
+      if (resolvedUsername.contains('@')) {
+        try {
+          final filterResponse = await _dio.get(
+            '/users/filter',
+            queryParameters: {
+              'key': 'email',
+              'value': resolvedUsername,
+            },
+            options: Options(extra: {'requiresAuth': false}),
+          );
+          final filterJson = ApiClient.parseJsonMap(filterResponse.data);
+          final usersList = filterJson?['users'] as List<dynamic>?;
+          if (usersList != null && usersList.isNotEmpty) {
+            final firstUser = usersList.first as Map<String, dynamic>?;
+            final uname = firstUser?['username'] as String?;
+            if (uname != null && uname.isNotEmpty) {
+              resolvedUsername = uname;
+            }
+          }
+        } catch (_) {
+          // If email lookup fails, proceed with the original identifier
+        }
+      }
+
       final response = await _dio.post(
         ApiConstants.loginEndpoint,
         data: {
-          'username': username.trim(),
+          'username': resolvedUsername,
           'password': password.trim(),
         },
         options: Options(

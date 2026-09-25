@@ -31,6 +31,8 @@ class AuthRepositoryImpl implements AuthRepository {
         throw const CacheException(message: 'Failed to persist authentication token');
       }
 
+      await _tokenStorage.saveUserSession(model.toJson());
+
       return model.toEntity();
     } on ServerException catch (e) {
       if (e.statusCode == 400 || e.statusCode == 401) {
@@ -74,11 +76,17 @@ class AuthRepositoryImpl implements AuthRepository {
         id: registeredUser.id,
         username: registeredUser.username,
         password: password,
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
       );
 
       return _createLocalSession(
         userId: registeredUser.id,
         username: registeredUser.username,
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
       );
     } on ServerException catch (e) {
       if (e.statusCode == 400 || e.statusCode == 401) {
@@ -97,6 +105,9 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<AuthSession> _createLocalSession({
     required int userId,
     required String username,
+    String? email,
+    String? firstName,
+    String? lastName,
   }) async {
     final localToken = 'local-$userId';
     final saveSuccess = await _tokenStorage.saveToken(localToken);
@@ -104,9 +115,22 @@ class AuthRepositoryImpl implements AuthRepository {
       throw const CacheException(message: 'Failed to persist authentication token');
     }
 
+    final userMap = {
+      'id': userId,
+      'username': username,
+      'email': email ?? '$username@example.com',
+      'firstName': firstName ?? username,
+      'lastName': lastName ?? '',
+    };
+    await _tokenStorage.saveUserSession(userMap);
+
     return AuthSession(
       token: localToken,
       username: username,
+      id: userId,
+      email: email,
+      firstName: firstName,
+      lastName: lastName,
     );
   }
 
@@ -125,6 +149,24 @@ class AuthRepositoryImpl implements AuthRepository {
     return _createLocalSession(
       userId: localUser.id,
       username: localUser.username,
+      email: localUser.email,
+      firstName: localUser.firstName,
+      lastName: localUser.lastName,
     );
+  }
+
+  @override
+  Future<void> logout() async {
+    try {
+      await _tokenStorage.clearUserSession();
+      final cleared = await _tokenStorage.clearToken();
+      if (!cleared) {
+        throw const CacheException(message: 'Failed to clear session token');
+      }
+    } on CacheException catch (e) {
+      throw CacheFailure(e.message);
+    } catch (e) {
+      throw CacheFailure('Failed to logout: ${e.toString()}');
+    }
   }
 }

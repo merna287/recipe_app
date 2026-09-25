@@ -7,7 +7,8 @@ import '../../features/auth/presentation/pages/sign_up_screen.dart';
 import '../../features/splash/presentation/pages/splash_screen.dart';
 import '../../features/home/presentation/cubit/home_cubit.dart';
 import '../../features/home/presentation/pages/home_screen.dart';
-import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/profile/presentation/cubit/profile_cubit.dart';
+import '../../features/profile/presentation/pages/profile_screen.dart';
 import 'app_routes.dart';
 
 /// Centralized route generator for Flutter.
@@ -53,7 +54,17 @@ class AppRouter {
       case AppRoutes.profile:
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => const ProfileScreen(),
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider<ProfileCubit>(
+                create: (_) => sl<ProfileCubit>()..loadProfile(),
+              ),
+              BlocProvider<AuthCubit>(
+                create: (_) => sl<AuthCubit>(),
+              ),
+            ],
+            child: const ProfileScreen(),
+          ),
         );
 
       default:

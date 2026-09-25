@@ -31,4 +31,61 @@ void main() {
       isNull,
     );
   });
+
+  test('saveUser and getUser persist and retrieve user correctly', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final storage = TokenStorage(prefs);
+
+    await storage.saveUser({
+      'id': 1,
+      'username': 'emilys',
+      'email': 'emily@example.com',
+    });
+
+    final user = storage.getUser();
+    expect(user?['id'], 1);
+    expect(user?['username'], 'emilys');
+    expect(user?['email'], 'emily@example.com');
+
+    await storage.clear();
+    expect(storage.getUser(), isNull);
+    expect(storage.getToken(), isNull);
+  });
+
+  test('getUser recovers user by local token when session is not directly cached', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final storage = TokenStorage(prefs);
+
+    await storage.saveLocalRegisteredUser(
+      id: 101,
+      username: 'alice',
+      password: 'pw',
+      email: 'alice@example.com',
+      firstName: 'Alice',
+      lastName: 'Wonder',
+    );
+    await storage.saveToken('local-101');
+
+    final user = storage.getUser();
+    expect(user?['id'], 101);
+    expect(user?['username'], 'alice');
+    expect(user?['email'], 'alice@example.com');
+    expect(user?['firstName'], 'Alice');
+  });
+
+  test('saveSavedRecipeIds and getSavedRecipeIds persist and retrieve exact IDs', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final storage = TokenStorage(prefs);
+
+    expect(storage.getSavedRecipeIds(), isEmpty);
+
+    await storage.saveSavedRecipeIds({1, 3, 5});
+    expect(storage.getSavedRecipeIds(), {1, 3, 5});
+
+    await storage.saveSavedRecipeIds({});
+    expect(storage.getSavedRecipeIds(), isEmpty);
+  });
 }
